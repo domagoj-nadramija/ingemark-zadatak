@@ -1,6 +1,7 @@
 package com.ingemark.webshop.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.Entity;
@@ -8,13 +9,15 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "webshop_order_item")
+@Table(name = "webshop_order")
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderItem {
+@Data
+public class OrderModel {
     @Id
     private Integer id;
-    private Integer order_id;
-    private Integer product_id;
-    private Integer quantity;
+    private Integer customer_id;
+    private String status;
+    private Double price_hrk;
+    private Double price_eur;
 }
