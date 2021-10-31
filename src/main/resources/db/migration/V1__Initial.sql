@@ -2,17 +2,17 @@ CREATE TYPE order_status_type AS ENUM ('DRAFT', 'SUBMITTED');
 
 CREATE TABLE webshop_product
 (
-    id              SERIAL PRIMARY KEY,
-    code            VARCHAR(10) UNIQUE CHECK ( length(code) = 10 ),
+    id              BIGSERIAL PRIMARY KEY,
+    code            VARCHAR(10) UNIQUE CHECK ( length(code) = 10 ) NOT NULL,
     name            TEXT,
-    price_hrk       NUMERIC CHECK ( price_hrk >= 0 ),
+    price_hrk       NUMERIC CHECK ( price_hrk >= 0 ) NOT NULL,
     description     TEXT,
     is_available    BOOLEAN
 );
 
 CREATE TABLE webshop_customer
 (
-    id                SERIAL PRIMARY KEY,
+    id                BIGSERIAL PRIMARY KEY,
     first_name        TEXT,
     last_name         TEXT,
     email             TEXT
@@ -21,7 +21,7 @@ CREATE TABLE webshop_customer
 
 CREATE TABLE webshop_order
 (
-    id                SERIAL PRIMARY KEY,
+    id                BIGSERIAL PRIMARY KEY,
     customer_id       INTEGER NOT NULL,
     status            ORDER_STATUS_TYPE,
     price_hrk         NUMERIC,
@@ -33,7 +33,7 @@ CREATE TABLE webshop_order
 
 CREATE TABLE webshop_order_item
 (
-    id                SERIAL PRIMARY KEY,
+    id                BIGSERIAL PRIMARY KEY,
     order_id          INTEGER NOT NULL,
     product_id        INTEGER NOT NULL,
     quantity          INTEGER,

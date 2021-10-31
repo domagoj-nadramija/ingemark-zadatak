@@ -1,17 +1,16 @@
 package com.ingemark.webshop.controller;
 
 import com.ingemark.webshop.ProductRepository;
+import com.ingemark.webshop.domain.CreateProductRequest;
 import com.ingemark.webshop.model.ProductModel;
 import lombok.AllArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 
 @Controller
@@ -22,39 +21,60 @@ public class ProductController {
 
     public final ProductRepository productRepository;
 
+    private ProductModel getProductOr404(Long id) {
+        Optional<ProductModel> product = productRepository.findById(id);
+        if (product.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found!");
+        } else {
+            return product.get();
+        }
+    }
+
+    @RequestMapping(method = RequestMethod.GET)
+    public @ResponseBody
+    Iterable<ProductModel> getAllProducts() {
+        return productRepository.findAll();
+    }
+
+
     @RequestMapping(method = RequestMethod.GET, value = "/{id}")
     public @ResponseBody
-    Optional<ProductModel> getProduct(@PathVariable Integer id) {
-        //TODO: return 404 if not found
-        return productRepository.findById(id);
+    ProductModel getProduct(@PathVariable Long id) {
+        return getProductOr404(id);
     }
 
     @RequestMapping(method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.CREATED)
     public @ResponseBody
-    Integer createProduct(HttpServletRequest request, Model model) {
+    Long createProduct(@RequestBody CreateProductRequest body) {
         ProductModel product = new ProductModel();
-        product.setId(1);
-        product.setCode("1234567890");
-        product.setDescription("Really good");
-        product.setName("Hair gel");
-        product.setIs_available(true);
+        product.setCode(body.code);
+        product.setDescription(body.description);
+        product.setName(body.name);
+        product.setPrice_hrk(body.price_hrk);
+        product.setIs_available(body.is_available);
+        try {
+            product = productRepository.save(product);
+        } catch (DataIntegrityViolationException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid code!");
+        }
 
-        productRepository.save(product);
-        return 3;
+        return product.getId();
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/{id}")
     public @ResponseBody
-    Integer deleteProduct(@PathVariable Integer id) {
+    ProductModel deleteProduct(@PathVariable Long id) {
+        ProductModel product = getProductOr404(id);
         productRepository.deleteById(id);
-        //TODO: return 404 if not found
-        return null;
+        return product;
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value = "/{id}")
+    @RequestMapping(method = RequestMethod.PATCH, value = "/{id}")
     public @ResponseBody
-    Integer updateProduct(@PathVariable Integer id) {
-        //TODO: return 404 if not found
-        return 3;
+    Long updateProduct(@PathVariable Long id) {
+        getProductOr404(id);
+        //TODO
+        return 3L;
     }
 }

@@ -16,7 +16,7 @@ import javax.persistence.Table;
 @Data
 public class CustomerModel {
     @Id
-    private Integer id;
+    private Long id;
     private String first_name;
     private String last_name;
     private String email;

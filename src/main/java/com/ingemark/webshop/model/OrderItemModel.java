@@ -15,8 +15,8 @@ import javax.persistence.Table;
 @Data
 public class OrderItemModel {
     @Id
-    private Integer id;
-    private Integer order_id;
-    private Integer product_id;
+    private Long id;
+    private Long order_id;
+    private Long product_id;
     private Integer quantity;
 }

@@ -15,8 +15,8 @@ import javax.persistence.Table;
 @Data
 public class OrderModel {
     @Id
-    private Integer id;
-    private Integer customer_id;
+    private Long id;
+    private Long customer_id;
     private String status;
     private Double price_hrk;
     private Double price_eur;
