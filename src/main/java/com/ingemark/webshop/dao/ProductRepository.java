@@ -1,4 +1,4 @@
-package com.ingemark.webshop;
+package com.ingemark.webshop.dao;
 
 import com.ingemark.webshop.model.ProductModel;
 import org.springframework.data.repository.CrudRepository;

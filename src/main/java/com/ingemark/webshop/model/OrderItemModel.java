@@ -4,9 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "webshop_order_item")
@@ -15,8 +13,10 @@ import javax.persistence.Table;
 @Data
 public class OrderItemModel {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long order_id;
     private Long product_id;
     private Integer quantity;
 }
+

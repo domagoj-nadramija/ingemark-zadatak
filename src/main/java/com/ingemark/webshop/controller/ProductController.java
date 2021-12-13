@@ -1,6 +1,6 @@
 package com.ingemark.webshop.controller;
 
-import com.ingemark.webshop.ProductRepository;
+import com.ingemark.webshop.dao.ProductRepository;
 import com.ingemark.webshop.domain.CreateProductRequest;
 import com.ingemark.webshop.model.ProductModel;
 import lombok.AllArgsConstructor;
