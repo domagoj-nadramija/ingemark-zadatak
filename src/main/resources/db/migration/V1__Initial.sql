@@ -29,6 +29,7 @@ CREATE TABLE webshop_order
     CONSTRAINT fk_customer
         FOREIGN KEY (customer_id)
             REFERENCES webshop_customer(id)
+                ON DELETE cascade
 );
 
 CREATE TABLE webshop_order_item
@@ -39,8 +40,10 @@ CREATE TABLE webshop_order_item
     quantity          INTEGER,
     CONSTRAINT fk_order
         FOREIGN KEY (order_id)
-            REFERENCES webshop_order(id),
+            REFERENCES webshop_order(id)
+                ON DELETE cascade,
     CONSTRAINT fk_product
         FOREIGN KEY (product_id)
             REFERENCES webshop_product(id)
+                ON DELETE cascade
 );
