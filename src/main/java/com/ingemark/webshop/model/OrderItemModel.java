@@ -17,6 +17,6 @@ public class OrderItemModel {
     private Long id;
     private Long order_id;
     private Long product_id;
-    private Integer quantity;
+    private Long quantity;
 }
 

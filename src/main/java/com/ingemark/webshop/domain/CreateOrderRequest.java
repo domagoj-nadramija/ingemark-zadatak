@@ -5,5 +5,5 @@ import java.util.HashMap;
 
 public class CreateOrderRequest {
     public Long customer_id;
-    public ArrayList<Object> items;
+    public ArrayList<HashMap<String,Long>> items;
 }
