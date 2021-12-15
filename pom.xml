@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.ingemark</groupId>
 	<artifactId>webshop</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>webshop</name>
 	<description>REST webshop for Ingemark</description>
 	<properties>
