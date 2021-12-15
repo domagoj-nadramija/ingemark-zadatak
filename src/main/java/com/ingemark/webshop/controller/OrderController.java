@@ -7,6 +7,7 @@ import com.ingemark.webshop.domain.CreateOrderRequest;
 import com.ingemark.webshop.model.OrderItemModel;
 import com.ingemark.webshop.model.OrderModel;
 import com.ingemark.webshop.model.OrderStatus;
+import com.ingemark.webshop.model.ProductModel;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -33,10 +34,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Controller
 @RequestMapping("/orders")
@@ -72,7 +70,7 @@ public class OrderController {
         String responseBody = responseSpec.bodyToMono(String.class).block();
 
         JSONArray parsedBody = (JSONArray) new JSONParser().parse(responseBody);
-
+        // API returns exchange rate as string with comma instead of period
         DecimalFormat df = new DecimalFormat();
         DecimalFormatSymbols symbols = new DecimalFormatSymbols();
         symbols.setDecimalSeparator(',');
@@ -82,17 +80,33 @@ public class OrderController {
 
     private void addItemsToOrder(Long orderId, ArrayList<HashMap<String, Long>> items) {
         ArrayList<OrderItemModel> orderItems = new ArrayList<>();
+        Set<Long> productIds = new LinkedHashSet<>();
         for (HashMap<String, Long> item : items) {
             OrderItemModel newOrderItem = new OrderItemModel();
             Long productId = item.get("product_id");
-            //TODO: check if product exists and is available
+            productIds.add(productId);
             Long quantity = item.get("quantity");
             newOrderItem.setOrder_id(orderId);
             newOrderItem.setProduct_id(productId);
             newOrderItem.setQuantity(quantity);
             orderItems.add(newOrderItem);
         }
-        orderItemRepository.saveAll(orderItems);
+        ArrayList<ProductModel> foundProducts = (ArrayList<ProductModel>) productRepository.findAllById(productIds);
+        // check that we found all products
+        if (foundProducts.size() < productIds.size()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown product ID!");
+        }
+        // check that all products to be added to order are "available"
+        for (ProductModel product : foundProducts) {
+            if (! product.getIs_available()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot add unavailable product to order!");
+            }
+        }
+        try {
+            orderItemRepository.saveAll(orderItems);
+        } catch (DataIntegrityViolationException | ConstraintViolationException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or more items in order are invalid!");
+        }
     }
 
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -124,12 +138,8 @@ public class OrderController {
         ArrayList<HashMap<String, Long>> items = body.items;
 
         Long orderId = order.getId();
+        addItemsToOrder(orderId, items);
 
-        try {
-            addItemsToOrder(orderId, items);
-        } catch (DataIntegrityViolationException | ConstraintViolationException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid product ID!");
-        }
         return jsonResponse("Order successfully created", Map.of("new_item_id", order.getId()));
     }
 
@@ -146,6 +156,7 @@ public class OrderController {
     JSONObject updateOrder(@PathVariable Long id, @RequestBody String body) {
         OrderModel order = getOrderOr404(id);
         HashMap<String, Object> oldOrderHashMap = order.toHashMap();
+        Long orderId = order.getId();
         JSONObject parsedBody;
         try {
             parsedBody = (JSONObject) new JSONParser().parse(body);
@@ -154,22 +165,14 @@ public class OrderController {
         }
         parsedBody.forEach((key, value) -> {
             switch ((String) key) {
-                case "customer_id" -> {
-                    order.setCustomer_id((Long) value);
-                }
-                case "items" -> {
-                    for (Object item : (JSONArray) value) {
-                        //TODO: finish
-                        JSONObject bla = (JSONObject) item;
-                        log.info("unpacking {} {}", bla, bla.getClass());
-                    }
-                }
+                case "customer_id" -> order.setCustomer_id((Long) value);
+                case "items" -> addItemsToOrder(orderId,(JSONArray) value);
             }
         });
         try {
             orderRepository.save(order);
         } catch (DataIntegrityViolationException | ConstraintViolationException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Something is incorrect!");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid customer ID!");
         }
         return jsonResponse("Order successfully updated", Map.of("old_item", oldOrderHashMap, "updated_item", order.toHashMap()));
     }
