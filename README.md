@@ -48,3 +48,4 @@ Many useful endpoints are exposed on **/actuator** like health checks, metrics, 
 ```
 http://localhost:5000/actuator
 ```
+A Postman collection is available `Ingemark_webshop.postman_collection.json` which can be imported into Postman to easily make API calls to the application.
