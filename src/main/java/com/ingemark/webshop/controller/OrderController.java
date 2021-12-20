@@ -102,6 +102,11 @@ public class OrderController {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot add unavailable product to order!");
             }
         }
+        // remove old items from order
+        String totalPriceQuery = "delete from webshop_order_item where order_id = :id;";
+        SqlParameterSource namedParameters = new MapSqlParameterSource().addValue("id", orderId);
+        namedParameterJdbcTemplate.update(totalPriceQuery, namedParameters);
+
         try {
             orderItemRepository.saveAll(orderItems);
         } catch (DataIntegrityViolationException | ConstraintViolationException e) {
@@ -118,7 +123,10 @@ public class OrderController {
     @RequestMapping(method = RequestMethod.GET, value = "/{id}")
     public @ResponseBody
     JSONObject getOrder(@PathVariable Long id) {
-        return jsonResponse("Order successfully retrieved", Map.of("item", getOrderOr404(id)));
+        String getOrderItemsQuery = "select webshop_order_item.quantity, webshop_product.code, webshop_product.\"name\", webshop_product.price_hrk, webshop_product.description, webshop_product.is_available from webshop_order_item join webshop_product on webshop_order_item.product_id = webshop_product.id where webshop_order_item.order_id =  :id";
+        SqlParameterSource namedParameters = new MapSqlParameterSource().addValue("id", id);
+        var orderItems  = namedParameterJdbcTemplate.queryForList(getOrderItemsQuery, namedParameters);
+        return jsonResponse("Order successfully retrieved", Map.of("order", getOrderOr404(id), "order_items", orderItems));
     }
 
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -152,6 +160,7 @@ public class OrderController {
     }
 
     @RequestMapping(method = RequestMethod.PATCH, value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
     public @ResponseBody
     JSONObject updateOrder(@PathVariable Long id, @RequestBody String body) {
         OrderModel order = getOrderOr404(id);

@@ -19,9 +19,9 @@ VALUES (2000,'5475331705', 'Oral-B električna četkica za zube Pro 2000', 499.0
 -- Add sample orders
 INSERT INTO webshop.webshop_order
 (id, customer_id, status, price_hrk, price_eur)
-VALUES (3000, 1000, 'DRAFT', 943.0, 0),
+VALUES (3000, 1000, 'DRAFT', 0, 0),
        (3001, 1000, 'SUBMITTED', 2349.0, 312.35),
-       (3002, 1001, 'DRAFT', 222.0, 0),
+       (3002, 1001, 'DRAFT', 0, 0),
        (3003, 1001, 'SUBMITTED', 927.0, 123.26);
 
 
